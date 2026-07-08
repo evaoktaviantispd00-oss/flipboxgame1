@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permainan Flip Box: Kenali Perangkat Keras Komputer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        neon: {
+                            blue: '#00f3ff',
+                            dark: '#0a0f1a',
+                            panel: '#151b2b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050810;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 243, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(0, 243, 255, 0.05) 0%, transparent 50%),
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            overflow-x: hidden;
+        }
+
+        /* 3D Flip Card Styles */
+        .perspective {
+            perspective: 1000px;
+        }
+        
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        }
+        
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        
+        .flip-card.flipped .transform-style-3d {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card.matched .transform-style-3d {
+            transform: rotateY(180deg);
+            animation: pulse-glow 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px rgba(0, 243, 255, 0.4) inset, 0 0 10px rgba(0, 243, 255, 0.2); border-color: rgba(0, 243, 255, 0.5); }
+            100% { box-shadow: 0 0 25px rgba(0, 243, 255, 0.8) inset, 0 0 20px rgba(0, 243, 255, 0.6); border-color: #00f3ff; }
+        }
+
+        /* Digital Board Glow */
+        .digital-board {
+            box-shadow: 
+                0 0 40px rgba(0, 243, 255, 0.15),
+                inset 0 0 20px rgba(0, 243, 255, 0.1);
+            border: 2px solid rgba(0, 243, 255, 0.3);
+        }
+
+        /* Circuit Animation */
+        .circuit-line {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 4s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-200 font-inter flex items-center justify-center p-4 selection:bg-neon-blue selection:text-neon-dark relative">
+
+    <!-- Background Decor: Circuits and Cables -->
+    <svg class="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 z-0" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+        <path d="M 0,200 L 300,200 L 350,250 L 500,250" fill="none" stroke="#00f3ff" stroke-width="2" class="circuit-line"/>
+        <circle cx="500" cy="250" r="4" fill="#00f3ff"/>
+        <path d="M 1920,800 L 1600,800 L 1550,750 L 1400,750" fill="none" stroke="#00f3ff" stroke-width="2" class="circuit-line" style="animation-delay: 1s;"/>
+        <circle cx="1400" cy="750" r="4" fill="#00f3ff"/>
+        <path d="M 200,1080 L 200,900 L 250,850 L 400,850" fill="none" stroke="#00f3ff" stroke-width="2" class="circuit-line" style="animation-delay: 2s;"/>
+        <circle cx="400" cy="850" r="4" fill="#00f3ff"/>
+    </svg>
+
+    <!-- Main Container -->
+    <div class="relative z-10 w-full max-w-6xl w-aspect-video flex flex-col items-center">
+        
+        <!-- Header -->
+        <div class="mb-6 text-center">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-orbitron font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] flex items-center justify-center gap-4">
+                <i class="fas fa-gamepad text-cyan-400"></i>
+                Permainan Flip Box
+            </h1>
+            <p class="mt-2 text-lg md:text-xl text-cyan-100 font-medium tracking-wide">
+                Kenali Perangkat Keras Komputer
+            </p>
+        </div>
+
+        <!-- Digital Whiteboard (Game Area) -->
+        <div class="digital-board bg-neon-panel rounded-3xl p-6 md:p-8 w-full backdrop-blur-sm relative flex flex-col">
+            <!-- Decorative Corners -->
+            <div class="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-cyan-400"></div>
+            <div class="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-cyan-400"></div>
+            <div class="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-cyan-400"></div>
+            <div class="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-cyan-400"></div>
+
+            <!-- Win Overlay (Hidden by default) -->
+            <div id="win-screen" class="hidden absolute inset-0 bg-neon-panel/90 backdrop-blur-md rounded-3xl z-50 flex flex-col items-center justify-center">
+                <i class="fas fa-trophy text-6xl text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.8)] mb-4"></i>
+                <h2 class="text-4xl font-orbitron font-bold text-cyan-300 mb-2">Luar Biasa!</h2>
+                <p class="text-lg text-gray-300 mb-6">Kamu berhasil mencocokkan semua perangkat keras.</p>
+                <button onclick="initGame()" class="px-8 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-full transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(0,243,255,0.4)]">
+                    Main Lagi <i class="fas fa-redo ml-2"></i>
+                </button>
+            </div>
+
+            <!-- Game Grid -->
+            <div id="game-grid" class="grid grid-cols-4 grid-rows-4 gap-3 md:gap-4 lg:gap-5 flex-grow min-h-[400px] md:min-h-[500px]">
+                <!-- Cards will be generated by JS -->
+            </div>
+        </div>
+
+        <!-- Instructions Footer -->
+        <div class="mt-6 flex items-center gap-3 bg-slate-800/80 border border-slate-700 px-6 py-3 rounded-full shadow-lg backdrop-blur-sm">
+            <i class="fas fa-info-circle text-cyan-400 text-xl animate-pulse"></i>
+            <p class="text-sm md:text-base text-gray-300">
+                “Klik dua kotak untuk membuka dan cocokan <strong class="text-cyan-300">gambar perangkat keras</strong> dengan <strong class="text-cyan-300">fungsinya</strong>!”
+            </p>
+        </div>
+    </div>
+
+    <!-- Game Logic -->
+    <script>
+        // Data Perangkat Keras (Pasangan: Ikon & Fungsi)
+        const hardwareData = [
+            { id: 'monitor', icon: 'fa-desktop', text: 'Menampilkan hasil pengolahan data berupa visual/grafis.' },
+            { id: 'cpu', icon: 'fa-microchip', text: 'Otak utama komputer yang memproses semua data dan perintah.' },
+            { id: 'keyboard', icon: 'fa-keyboard', text: 'Perangkat input untuk mengetik huruf, angka, dan simbol.' },
+            { id: 'mouse', icon: 'fa-mouse', text: 'Menggerakkan kursor dan melakukan klik pada layar.' },
+            { id: 'printer', icon: 'fa-print', text: 'Mencetak dokumen digital ke dalam media kertas.' },
+            { id: 'speaker', icon: 'fa-volume-up', text: 'Menghasilkan output berupa suara atau audio.' },
+            { id: 'flashdisk', icon: 'fa-usb', text: 'Media penyimpanan data portabel yang mudah dibawa.' },
+            { id: 'headphone', icon: 'fa-headphones', text: 'Mendengarkan audio secara pribadi tanpa mengganggu sekitar.' }
+        ];
+
+        let cards = [];
+        let hasFlippedCard = false;
+        let lockBoard = false;
+        let firstCard, secondCard;
+        let matchedPairs = 0;
+
+        const gameGrid = document.getElementById('game-grid');
+        const winScreen = document.getElementById('win-screen');
+
+        function initGame() {
+            gameGrid.innerHTML = '';
+            winScreen.classList.add('hidden');
+            cards = [];
+            matchedPairs = 0;
+            hasFlippedCard = false;
+            lockBoard = false;
+            firstCard = null;
+            secondCard = null;
+
+            // Buat pasangan kartu (satu ikon, satu teks)
+            hardwareData.forEach(item => {
+                // Kartu Ikon (Gambar)
+                cards.push({
+                    type: item.id,
+                    content: `<i class="fas ${item.icon} text-5xl md:text-6xl text-cyan-300 drop-shadow-[0_0_10px_rgba(0,243,255,0.8)]"></i>`,
+                    isImage: true
+                });
+                // Kartu Teks (Fungsi)
+                cards.push({
+                    type: item.id,
+                    content: `<p class="text-xs md:text-sm font-semibold text-center text-slate-100 leading-snug px-2">${item.text}</p>`,
+                    isImage: false
+                });
+            });
+
+            // Acak kartu
+            cards.sort(() => 0.5 - Math.random());
+
+            // Render ke DOM
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('flip-card', 'perspective', 'w-full', 'h-full', 'cursor-pointer');
+                cardElement.dataset.type = card.type;
+
+                cardElement.innerHTML = `
+                    <div class="transform-style-3d relative w-full h-full rounded-xl shadow-lg border border-slate-700 hover:border-cyan-500/50 transition-colors">
+                        <!-- Bagian Depan Kartu (Tertutup) -->
+                        <div class="backface-hidden absolute w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-microchip text-3xl text-slate-600 opacity-50"></i>
+                        </div>
+                        <!-- Bagian Belakang Kartu (Terbuka) -->
+                        <div class="backface-hidden rotate-y-180 absolute w-full h-full bg-slate-800 border-2 border-cyan-500 rounded-xl flex items-center justify-center p-2 shadow-[inset_0_0_20px_rgba(0,243,255,0.2)]">
+                            ${card.content}
+                        </div>
+                    </div>
+                `;
+
+                cardElement.addEventListener('click', flipCard);
+                gameGrid.appendChild(cardElement);
+            });
+        }
+
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+
+            this.classList.add('flipped');
+
+            if (!hasFlippedCard) {
+                // Kartu pertama diklik
+                hasFlippedCard = true;
+                firstCard = this;
+                return;
+            }
+
+            // Kartu kedua diklik
+            secondCard = this;
+            checkForMatch();
+        }
+
+        function checkForMatch() {
+            let isMatch = firstCard.dataset.type === secondCard.dataset.type;
+
+            if (isMatch) {
+                disableCards();
+            } else {
+                unflipCards();
+            }
+        }
+
+        function disableCards() {
+            // Jika cocok
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            
+            firstCard.classList.add('matched', 'pointer-events-none');
+            secondCard.classList.add('matched', 'pointer-events-none');
+
+            matchedPairs++;
+            
+            if (matchedPairs === hardwareData.length) {
+                setTimeout(() => {
+                    winScreen.classList.remove('hidden');
+                    winScreen.classList.add('flex');
+                }, 800);
+            }
+
+            resetBoard();
+        }
+
+        function unflipCards() {
+            // Jika tidak cocok, kunci board sejenak, lalu tutup kembali
+            lockBoard = true;
+
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+                resetBoard();
+            }, 1200);
+        }
+
+        function resetBoard() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+
+        // Mulai permainan saat halaman dimuat
+        window.onload = initGame;
+    </script>
+</body>
+</html>
